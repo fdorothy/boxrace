@@ -23,9 +23,9 @@ public class MapGenerator : MonoBehaviour
     }
     protected MapNode[] nodes;
 
-    protected float spacing = 5.0f;
-    protected float levelSpacing = 2.0f;
-    protected float stairWidth = 1.0f;
+    protected float spacing = 30.0f;
+    protected float levelSpacing = 5.0f;
+    protected float stairWidth = 2.0f;
 
     protected Vector3Int[] dirs = new Vector3Int[4] {
         new Vector3Int(1, 0, 0),
@@ -38,11 +38,11 @@ public class MapGenerator : MonoBehaviour
     {
         nodes = new MapNode[width * height * depth];
         startNode = new Vector3Int(2, 2, 0);
-        RandomTraceDown(startNode);
+        RandomTraceDown(startNode, -1);
         CreateMapTiles();
     }
 
-    void RandomTraceDown(Vector3Int v)
+    void RandomTraceDown(Vector3Int v, int incomingDir)
     {
         if (GetNode(v) == null)
         {
@@ -55,7 +55,7 @@ public class MapGenerator : MonoBehaviour
             for (int i = 0; i < dirs.Length; i++)
             {
                 // only include if in the bounds of the game
-                if (InBounds(dirs[i] + v + new Vector3Int(0, 0, 1)))
+                if (incomingDir != i && InBounds(dirs[i] + v + new Vector3Int(0, 0, 1)))
                     possibleDirs.Add(i);
             }
 
@@ -64,7 +64,7 @@ public class MapGenerator : MonoBehaviour
             {
                 int index = RandomValue(possibleDirs);
                 node.stairs[index] = 1;
-                RandomTraceDown(v + dirs[index] + new Vector3Int(0, 0, 1));
+                RandomTraceDown(v + dirs[index] + new Vector3Int(0, 0, 1), Opposite(index));
             }
         }
     }
