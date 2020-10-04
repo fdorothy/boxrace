@@ -641,9 +641,9 @@ MonoBehaviour:
     type: 3}
   wallPrefab: {fileID: 6978920816154103520, guid: e2685da35805bb740ad6a94b4cc6ca62,
     type: 3}
-  width: 4
-  height: 4
-  depth: 3
+  width: 5
+  height: 5
+  depth: 8
   startNode: {x: 0, y: 0, z: 0}
 --- !u!4 &925339172
 Transform:

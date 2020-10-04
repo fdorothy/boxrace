@@ -79,5 +79,12 @@ public class Player : MonoBehaviour
         rb.angularVelocity = Vector3.zero;
         rb.MoveRotation(Quaternion.identity);
         rb.MovePosition(startPosition);
+        rb.isKinematic = true;
+        Invoke("Release", 1.0f);
+    }
+
+    public void Release()
+    {
+        rb.isKinematic = false;
     }
 }
