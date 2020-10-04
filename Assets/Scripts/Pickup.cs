@@ -10,12 +10,13 @@ public class Pickup : MonoBehaviour
 
     private void Update()
     {
-        transform.position = initialPosition + dir * width * Mathf.Cos(t0 + t*speed) / 2.0f;
-        t += Time.deltaTime;
+        //transform.position = initialPosition + dir * width * Mathf.Cos(t0 + t*speed) / 2.0f;
+        //t += Time.deltaTime;
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        Game.singleton.coins += 1;
         Destroy(gameObject);
     }
 

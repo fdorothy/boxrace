@@ -42,6 +42,8 @@ public class MapGenerator : MonoBehaviour
 
     public void PopulateMap()
     {
+        Game.singleton.totalCoins = 0;
+        Game.singleton.coins = 0;
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
@@ -143,8 +145,6 @@ public class MapGenerator : MonoBehaviour
                         {
                             CreateStairs(start, end);
                             CreatePickups(start, end);
-
-                            CreateWalls(start, end);
                         }
                     }
                 }
@@ -206,11 +206,41 @@ public class MapGenerator : MonoBehaviour
         int n = (int)(v.magnitude / pickupPerUnit);
         float dv = 1.0f / (n - 1);
         Vector3 dir = Vector3.Cross(v, Vector3.up).normalized;
+        Vector3 perp = dir * stairWidth;
+        Vector3 offset = RandomItemOffset(perp);
+        int coinsToDrop = Random.Range(3, 10);
+        int cooldown = 3;
         for (int i = 0; i < n; i++)
         {
-            Pickup p = Instantiate<Pickup>(pickupPrefab, transform);
-            Vector3 pos = v * i * dv + src + Vector3.up * 0.1f;
-            p.Wander(5.0f * i / n, 0.25f, stairWidth, pos, dir);
+            Vector3 pos = v * i * dv + src + Vector3.up * 0.2f + offset;
+            if (cooldown > 0)
+            {
+                cooldown--;
+            }
+            else
+            {
+                if (coinsToDrop > 0)
+                {
+                    coinsToDrop--;
+
+                    Pickup p = Instantiate<Pickup>(pickupPrefab, transform);
+                    p.transform.position = pos;
+                    Game.singleton.totalCoins += 1;
+                    if (coinsToDrop == 0)
+                        cooldown = 2;
+                }
+                else
+                {
+                    // see if we should put down a wall here
+                    if (Random.Range(0, 3) == 0)
+                    {
+                        CreateWall(pos);
+                    }
+                    cooldown = 3;
+                    coinsToDrop = Random.Range(3, 10);
+                    offset = RandomItemOffset(perp);
+                }
+            }
         }
     }
 
@@ -228,7 +258,7 @@ public class MapGenerator : MonoBehaviour
         int n = (int)(v.magnitude * wallsPerUnit);
         float dv = 1.0f / (n - 1);
         Vector3 dir = Vector3.Cross(v, Vector3.up).normalized;
-        for (int i = 1; i < n-1; i++)
+        for (int i = 1; i < n - 1; i++)
         {
             Vector3 pos = v * i * dv + src + Vector3.up * 0.1f;
             CreateWall(pos, dir * stairWidth);
@@ -238,9 +268,23 @@ public class MapGenerator : MonoBehaviour
     public void CreateWall(Vector3 src, Vector3 perp)
     {
         Transform p = Instantiate<Transform>(wallPrefab, transform);
-        p.position = src + (Random.value - 0.5f) * perp;
+        p.position = src + RandomItemOffset(perp);
 
         // randomize the direction
         p.rotation = Quaternion.AngleAxis((int)(Random.value * 4) * 90.0f + 45.0f, Vector3.up);
+    }
+
+    public void CreateWall(Vector3 src)
+    {
+        Transform p = Instantiate<Transform>(wallPrefab, transform);
+        p.position = src;
+
+        // randomize the direction
+        p.rotation = Quaternion.AngleAxis((int)(Random.value * 4) * 90.0f + 45.0f, Vector3.up);
+    }
+
+    public Vector3 RandomItemOffset(Vector3 perp)
+    {
+        return ((int)(Random.value * 3) / 2.0f - 0.5f) * perp * 0.8f;
     }
 }
