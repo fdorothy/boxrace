@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
     float hopForwardForce = 1.0f;
     float leanForce = 1f;
     float rotationSpeed = 180.0f;
-    float breakSpeed = 1.0f;
+    float breakSpeed = 0.5f;
     public LayerMask terrainMask;
 
     // Start is called before the first frame update
@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
             {
                 Vector3 right = Vector3.Cross(rb.velocity.normalized, transform.up);
                 rb.AddForce(-right * dx * leanForce);
-                if (dy < 0.0f && rb.velocity.magnitude > 0.0f)
+                if (dy < -0.1f && rb.velocity.magnitude > 0.0f)
                 {
                     rb.AddForce(-breakSpeed * rb.velocity);
                 }

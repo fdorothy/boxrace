@@ -27,7 +27,7 @@ public class MapGenerator : MonoBehaviour
     protected MapNode[] nodes;
 
     protected float spacing = 30.0f;
-    protected float levelSpacing = 5.0f;
+    protected float levelSpacing = 6.0f;
     protected float stairWidth = 2.0f;
 
     protected Vector3Int[] dirs = new Vector3Int[4] {
