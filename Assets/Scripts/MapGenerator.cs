@@ -9,6 +9,8 @@ public class MapGenerator : MonoBehaviour
     public Transform player;
     public Landing landingPrefab;
     public Stairs stairsPrefab;
+    public Goal goalPrefab;
+    public Pickup pickupPrefab;
 
     public int width = 10;
     public int height = 10;
@@ -19,6 +21,7 @@ public class MapGenerator : MonoBehaviour
 
     public class MapNode
     {
+        public bool goal = false;
         public int[] stairs = new int[4];
     }
     protected MapNode[] nodes;
@@ -34,8 +37,14 @@ public class MapGenerator : MonoBehaviour
         new Vector3Int(0, -1, 0)
     };
 
+    public float LevelSpacing { get => levelSpacing; }
+
     public void PopulateMap()
     {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
         nodes = new MapNode[width * height * depth];
         startNode = new Vector3Int(2, 2, 0);
         RandomTraceDown(startNode, -1);
@@ -65,6 +74,10 @@ public class MapGenerator : MonoBehaviour
                 int index = RandomValue(possibleDirs);
                 node.stairs[index] = 1;
                 RandomTraceDown(v + dirs[index] + new Vector3Int(0, 0, 1), Opposite(index));
+            }
+            else
+            {
+                node.goal = true;
             }
         }
     }
@@ -98,15 +111,38 @@ public class MapGenerator : MonoBehaviour
                     MapNode node = nodes[i + j * width + k * width * height];
                     if (node != null)
                     {
-                        CreateLanding(new Vector3Int(i, j, k));
+                        if (node.goal)
+                            CreateGoal(new Vector3Int(i, j, k));
+                        else
+                            CreateLanding(new Vector3Int(i, j, k));
+                        Vector3Int start = new Vector3Int(i, j, k);
+                        Vector3Int end = Vector3Int.zero;
+                        bool hasStairs = false;
                         if (node.stairs[0] == 1)
-                            CreateStairs(new Vector3Int(i, j, k), new Vector3Int(i + 1, j, k + 1));
+                        {
+                            end = new Vector3Int(i + 1, j, k + 1);
+                            hasStairs = true;
+                        }
                         if (node.stairs[1] == 1)
-                            CreateStairs(new Vector3Int(i, j, k), new Vector3Int(i, j + 1, k + 1));
+                        {
+                            end = new Vector3Int(i, j + 1, k + 1);
+                            hasStairs = true;
+                        }
                         if (node.stairs[2] == 1)
-                            CreateStairs(new Vector3Int(i, j, k), new Vector3Int(i - 1, j, k + 1));
+                        {
+                            end = new Vector3Int(i - 1, j, k + 1);
+                            hasStairs = true;
+                        }
                         if (node.stairs[3] == 1)
-                            CreateStairs(new Vector3Int(i, j, k), new Vector3Int(i, j - 1, k + 1));
+                        {
+                            end = new Vector3Int(i, j - 1, k + 1);
+                            hasStairs = true;
+                        }
+                        if (hasStairs)
+                        {
+                            CreateStairs(start, end);
+                            CreatePickups(start, end);
+                        }
                     }
                 }
             }
@@ -124,11 +160,21 @@ public class MapGenerator : MonoBehaviour
         landing.Build(center, stairWidth);
     }
 
+    void CreateGoal(Vector3Int src)
+    {
+        CreateGoal(MapToWorld(src));
+    }
+
+    void CreateGoal(Vector3 center)
+    {
+        Goal goal = Instantiate(goalPrefab, transform);
+        goal.Build(center, stairWidth);
+    }
+
     void CreateStairs(Vector3Int src, Vector3Int dst)
     {
         Vector3Int diff = dst - src;
         Vector3 spacing = (new Vector3(diff.x, 0.0f, diff.y)).normalized * stairWidth / 2.0f;
-        Debug.Log("spacing = " + spacing);
         CreateStairs(MapToWorld(src) + spacing, MapToWorld(dst) - spacing);
     }
 
@@ -141,5 +187,27 @@ public class MapGenerator : MonoBehaviour
     public Vector3 MapToWorld(Vector3Int v)
     {
         return new Vector3(v.x * spacing, -v.z * levelSpacing, v.y * spacing);
+    }
+
+    void CreatePickups(Vector3Int src, Vector3Int dst)
+    {
+        Vector3Int diff = dst - src;
+        Vector3 spacing = (new Vector3(diff.x, 0.0f, diff.y)).normalized * stairWidth / 2.0f;
+        CreatePickups(MapToWorld(src) + spacing, MapToWorld(dst) - spacing);
+    }
+
+    public void CreatePickups(Vector3 src, Vector3 dst)
+    {
+        Vector3 v = dst - src;
+        const float pickupPerUnit = 1.0f;
+        int n = (int)(v.magnitude / pickupPerUnit);
+        float dv = 1.0f / (n - 1);
+        Vector3 dir = Vector3.Cross(v, Vector3.up).normalized;
+        for (int i = 0; i < n; i++)
+        {
+            Pickup p = Instantiate<Pickup>(pickupPrefab, transform);
+            Vector3 pos = v * i * dv + src + Vector3.up * 0.1f;
+            p.Wander(5.0f * i / n, 0.25f, stairWidth, pos, dir);
+        }
     }
 }

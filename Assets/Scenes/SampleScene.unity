@@ -247,9 +247,13 @@ MonoBehaviour:
     type: 3}
   stairsPrefab: {fileID: 3112296448108011342, guid: 02e107d837fbe894fb57dd9d29de2104,
     type: 3}
+  goalPrefab: {fileID: 5553693400832208086, guid: b4ceb7ca22d3fcc458c409e26c8f8d9a,
+    type: 3}
+  pickupPrefab: {fileID: 561691284609198555, guid: 6e6b07e82333aa843bfaac648d0c8eda,
+    type: 3}
   width: 4
   height: 4
-  depth: 5
+  depth: 3
   startNode: {x: 0, y: 0, z: 0}
 --- !u!4 &925339172
 Transform:

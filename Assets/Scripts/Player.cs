@@ -72,4 +72,12 @@ public class Player : MonoBehaviour
         RaycastHit hitInfo;
         return Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out hitInfo, 0.15f, terrainMask.value);
     }
+
+    public void Reset(Vector3 startPosition)
+    {
+        rb.velocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.MoveRotation(Quaternion.identity);
+        rb.MovePosition(startPosition);
+    }
 }

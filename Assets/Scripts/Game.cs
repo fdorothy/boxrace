@@ -16,6 +16,25 @@ public class Game : MonoBehaviour
     void NewLevel()
     {
         mapGenerator.PopulateMap();
-        player.transform.position = mapGenerator.MapToWorld(mapGenerator.startNode) + Vector3.up;
+        Vector3 startPosition = mapGenerator.MapToWorld(mapGenerator.startNode) + Vector3.up;
+        player.Reset(startPosition);
+    }
+
+    private void Update()
+    {
+        if (PlayerFell())
+        {
+            NewLevel();
+        }
+    }
+
+    bool PlayerFell()
+    {
+        return (player.transform.position.y < -mapGenerator.depth * mapGenerator.LevelSpacing);
+    }
+
+    public void Win()
+    {
+        NewLevel();
     }
 }
