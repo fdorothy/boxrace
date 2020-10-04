@@ -11,6 +11,7 @@ public class MapGenerator : MonoBehaviour
     public Stairs stairsPrefab;
     public Goal goalPrefab;
     public Pickup pickupPrefab;
+    public Transform wallPrefab;
 
     public int width = 10;
     public int height = 10;
@@ -142,6 +143,8 @@ public class MapGenerator : MonoBehaviour
                         {
                             CreateStairs(start, end);
                             CreatePickups(start, end);
+
+                            CreateWalls(start, end);
                         }
                     }
                 }
@@ -209,5 +212,35 @@ public class MapGenerator : MonoBehaviour
             Vector3 pos = v * i * dv + src + Vector3.up * 0.1f;
             p.Wander(5.0f * i / n, 0.25f, stairWidth, pos, dir);
         }
+    }
+
+    public void CreateWalls(Vector3Int src, Vector3Int dst)
+    {
+        Vector3Int diff = dst - src;
+        Vector3 spacing = (new Vector3(diff.x, 0.0f, diff.y)).normalized * stairWidth / 2.0f;
+        CreateWalls(MapToWorld(src) + spacing, MapToWorld(dst) - spacing);
+    }
+
+    public void CreateWalls(Vector3 src, Vector3 dst)
+    {
+        Vector3 v = dst - src;
+        const float wallsPerUnit = 0.2f;
+        int n = (int)(v.magnitude * wallsPerUnit);
+        float dv = 1.0f / (n - 1);
+        Vector3 dir = Vector3.Cross(v, Vector3.up).normalized;
+        for (int i = 1; i < n-1; i++)
+        {
+            Vector3 pos = v * i * dv + src + Vector3.up * 0.1f;
+            CreateWall(pos, dir * stairWidth);
+        }
+    }
+
+    public void CreateWall(Vector3 src, Vector3 perp)
+    {
+        Transform p = Instantiate<Transform>(wallPrefab, transform);
+        p.position = src + (Random.value - 0.5f) * perp;
+
+        // randomize the direction
+        p.rotation = Quaternion.AngleAxis((int)(Random.value * 4) * 90.0f + 45.0f, Vector3.up);
     }
 }
