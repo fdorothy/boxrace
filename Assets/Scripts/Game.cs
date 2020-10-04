@@ -7,6 +7,7 @@ public class Game : MonoBehaviour
     public MapGenerator mapGenerator;
     public Player player;
     public TextManager textManager;
+    public AudioSource music;
 
     public int coins = 0;
     public int totalCoins = 0;
@@ -42,7 +43,8 @@ public class Game : MonoBehaviour
     {
         singleton = this;
         NewLevel();
-        textManager.ShowText(introText, () => { });
+        textManager.ShowText(introText, () => {
+        });
     }
 
     void NewLevel()

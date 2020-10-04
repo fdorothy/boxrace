@@ -5,12 +5,12 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     Rigidbody rb;
-    float jumpForce = 100.0f;
+    public float jumpForce = 2.0f;
     float jumpCooldown = 0.0f;
-    float hopForwardForce = 1.0f;
-    float leanForce = 1f;
-    float rotationSpeed = 180.0f;
-    float breakSpeed = 0.5f;
+    public float hopForwardForce = 0.1f;
+    public float leanForce = 0.1f;
+    public float rotationSpeed = 180.0f;
+    public float breakSpeed = 0.5f;
     public LayerMask terrainMask;
 
     // Start is called before the first frame update
@@ -30,7 +30,7 @@ public class Player : MonoBehaviour
             // jump
             if (OnGround())
             {
-                rb.AddForce(Vector3.up * jumpForce);
+                rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 jumpCooldown = 0.25f;
             }
         }
@@ -41,7 +41,7 @@ public class Player : MonoBehaviour
         float dt = Time.deltaTime;
         if (!OnGround())
         {
-            rb.AddRelativeForce(Vector3.forward * dy * hopForwardForce);
+            rb.AddRelativeForce(Vector3.forward * dy * hopForwardForce, ForceMode.Impulse);
             transform.Rotate(Vector3.up, dt * dx * rotationSpeed);
         }
         else
@@ -49,10 +49,10 @@ public class Player : MonoBehaviour
             if (rb.velocity.magnitude > 1.0f)
             {
                 Vector3 right = Vector3.Cross(rb.velocity.normalized, transform.up);
-                rb.AddForce(-right * dx * leanForce);
+                rb.AddForce(-right * dx * leanForce, ForceMode.VelocityChange);
                 if (dy < -0.1f && rb.velocity.magnitude > 0.0f)
                 {
-                    rb.AddForce(-breakSpeed * rb.velocity);
+                    rb.AddForce(-breakSpeed * rb.velocity, ForceMode.Acceleration);
                 }
 
                 LookTowards(rb.velocity.normalized, 2f);
