@@ -12,6 +12,8 @@ public class Player : MonoBehaviour
     public float rotationSpeed = 180.0f;
     public float breakSpeed = 0.5f;
     public LayerMask terrainMask;
+    public bool paused = true;
+    public bool jumped = false;
 
     // Start is called before the first frame update
     void Start()
@@ -19,14 +21,21 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
+        jumped = Input.GetKeyDown(KeyCode.Space);
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        if (paused) return;
         float dx = Input.GetAxis("Horizontal");
         float dy = Input.GetAxis("Vertical");
         bool doJump = (dy > 0.01f || Mathf.Abs(dx) > 0.01f) && rb.velocity.magnitude <= 0.1f;
-        if (jumpCooldown <= 0.0f && (Input.GetKeyDown(KeyCode.Space) || doJump))
+        if (jumpCooldown <= 0.0f && (jumped || doJump))
         {
+            jumped = false;
             // jump
             if (OnGround())
             {
@@ -41,7 +50,7 @@ public class Player : MonoBehaviour
         float dt = Time.deltaTime;
         if (!OnGround())
         {
-            rb.AddRelativeForce(Vector3.forward * dy * hopForwardForce, ForceMode.Impulse);
+            rb.AddRelativeForce(Vector3.forward * dy * hopForwardForce, ForceMode.Force);
             transform.Rotate(Vector3.up, dt * dx * rotationSpeed);
         }
         else
@@ -49,10 +58,10 @@ public class Player : MonoBehaviour
             if (rb.velocity.magnitude > 1.0f)
             {
                 Vector3 right = Vector3.Cross(rb.velocity.normalized, transform.up);
-                rb.AddForce(-right * dx * leanForce, ForceMode.VelocityChange);
+                rb.AddForce(-right * dx * leanForce, ForceMode.Acceleration);
                 if (dy < -0.1f && rb.velocity.magnitude > 0.0f)
                 {
-                    rb.AddForce(-breakSpeed * rb.velocity, ForceMode.Acceleration);
+                    rb.AddForce(-breakSpeed * rb.velocity, ForceMode.Force);
                 }
 
                 LookTowards(rb.velocity.normalized, 2f);
@@ -80,11 +89,13 @@ public class Player : MonoBehaviour
         rb.MoveRotation(Quaternion.identity);
         rb.MovePosition(startPosition);
         rb.isKinematic = true;
+        paused = true;
         Invoke("Release", 1.0f);
     }
 
     public void Release()
     {
         rb.isKinematic = false;
+        paused = false;
     }
 }
