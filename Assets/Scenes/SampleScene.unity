@@ -902,6 +902,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   paused: 1
+  jumped: 0
+  maxVelocity: 4.8
 --- !u!4 &1144409004
 Transform:
   m_ObjectHideFlags: 0
@@ -1094,6 +1096,7 @@ MonoBehaviour:
   coin: {fileID: 0}
   coins: 0
   totalCoins: 0
+  gameStartTime: 0
 --- !u!1 &1771508480
 GameObject:
   m_ObjectHideFlags: 0

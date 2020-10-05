@@ -14,6 +14,7 @@ public class Player : MonoBehaviour
     public LayerMask terrainMask;
     public bool paused = true;
     public bool jumped = false;
+    public float maxVelocity;
 
     // Start is called before the first frame update
     void Start()
@@ -67,6 +68,9 @@ public class Player : MonoBehaviour
                 LookTowards(rb.velocity.normalized, 2f);
             }
         }
+
+        if (rb.velocity.magnitude > maxVelocity)
+            rb.velocity = rb.velocity.normalized * maxVelocity;
     }
 
     void LookTowards(Vector3 targetDirection, float speed)
@@ -90,7 +94,7 @@ public class Player : MonoBehaviour
         rb.MovePosition(startPosition);
         rb.isKinematic = true;
         paused = true;
-        Invoke("Release", 1.0f);
+        Invoke("Release", 0.5f);
     }
 
     public void Release()

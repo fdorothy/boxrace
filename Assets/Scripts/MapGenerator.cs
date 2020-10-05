@@ -24,6 +24,7 @@ public class MapGenerator : MonoBehaviour
     {
         public bool goal = false;
         public int[] stairs = new int[4];
+        public bool[] walls = new bool[4];
     }
     protected MapNode[] nodes;
 
@@ -76,6 +77,13 @@ public class MapGenerator : MonoBehaviour
             {
                 int index = RandomValue(possibleDirs);
                 node.stairs[index] = 1;
+                for (int i = 0; i < 4; i++)
+                {
+                    if (index != i && incomingDir != i)
+                        node.walls[i] = true;
+                    else
+                        node.walls[i] = false;
+                }
                 RandomTraceDown(v + dirs[index] + new Vector3Int(0, 0, 1), Opposite(index));
             }
             else
@@ -146,6 +154,9 @@ public class MapGenerator : MonoBehaviour
                             CreateStairs(start, end);
                             CreatePickups(start, end);
                         }
+                        for (int x = 0; x < 4; x++)
+                            if (node.walls[x])
+                                CreateWallAtEdge(MapToWorld(new Vector3Int(i, j, k)), x);
                     }
                 }
             }
@@ -212,7 +223,7 @@ public class MapGenerator : MonoBehaviour
         int cooldown = 3;
         for (int i = 0; i < n; i++)
         {
-            Vector3 pos = v * i * dv + src + Vector3.up * 0.2f + offset;
+            Vector3 pos = v * i * dv + src + Vector3.up * 0.2f + offset * 0.8f;
             if (cooldown > 0)
             {
                 cooldown--;
@@ -251,6 +262,13 @@ public class MapGenerator : MonoBehaviour
         CreateWalls(MapToWorld(src) + spacing, MapToWorld(dst) - spacing);
     }
 
+    public void CreateWallAtEdge(Vector3 src, int dir)
+    {
+        Vector3Int diff = dirs[dir];
+        Vector3 spacing = (new Vector3(diff.x, 0.0f, diff.y)).normalized * stairWidth / 2.0f;
+        CreateWall(src + spacing, dir % 2 == 0 ? 0.0f : 90.0f);
+    }
+
     public void CreateWalls(Vector3 src, Vector3 dst)
     {
         Vector3 v = dst - src;
@@ -276,11 +294,16 @@ public class MapGenerator : MonoBehaviour
 
     public void CreateWall(Vector3 src)
     {
+        CreateWall(src, (int)(Random.value * 4) * 90.0f + 45.0f);
+    }
+
+    public void CreateWall(Vector3 src, float angle)
+    {
         Transform p = Instantiate<Transform>(wallPrefab, transform);
         p.position = src;
 
         // randomize the direction
-        p.rotation = Quaternion.AngleAxis((int)(Random.value * 4) * 90.0f + 45.0f, Vector3.up);
+        p.rotation = Quaternion.AngleAxis(angle, Vector3.up);
     }
 
     public Vector3 RandomItemOffset(Vector3 perp)
